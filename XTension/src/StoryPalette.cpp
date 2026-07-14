@@ -13,8 +13,6 @@
 #include "Logger.h"
 #include "resource.h"
 #include <sstream>
-#include <codecvt>
-#include <locale>
 
 namespace StoryXT {
 
@@ -30,21 +28,17 @@ constexpr UINT WM_STORY_DETAIL_READY = WM_USER + 2;
 static std::wstring ToWideString(const std::string& str) {
     if (str.empty()) return L"";
     
-    try {
-        int sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), 
-                                              static_cast<int>(str.size()), NULL, 0);
-        if (sizeNeeded == 0) {
-            // Fallback for non-UTF8 strings
-            return std::wstring(str.begin(), str.end());
-        }
-        
-        std::wstring wstr(sizeNeeded, 0);
-        MultiByteToWideChar(CP_UTF8, 0, str.c_str(), 
-                           static_cast<int>(str.size()), &wstr[0], sizeNeeded);
-        return wstr;
-    } catch (...) {
+    int sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), 
+                                          static_cast<int>(str.size()), NULL, 0);
+    if (sizeNeeded == 0) {
+        // Fallback for non-UTF8 strings
         return std::wstring(str.begin(), str.end());
     }
+    
+    std::wstring wstr(sizeNeeded, 0);
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), 
+                       static_cast<int>(str.size()), &wstr[0], sizeNeeded);
+    return wstr;
 }
 
 StoryPalette::StoryPalette(HINSTANCE hInstance, HWND hwndParent)
