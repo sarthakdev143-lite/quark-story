@@ -13,9 +13,22 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include "XTExtensions.h"    // Quark SDK provided header
 #include "StoryPalette.h"
 #include "Logger.h"
+
+// Forward declare Quark SDK types to avoid dependency on missing header
+// In production, include the actual SDK header: #include "XTExtensions.h"
+typedef long XTError;
+typedef int XTExtensionID;
+#define STDCALL __stdcall
+#define kNoErr 0
+
+extern "C" {
+    // Quark SDK function declarations (stubbed for compilation without SDK)
+    // These will be resolved when linked against actual Quark SDK
+    XTError STDCALL XTRegisterMenuItem(XTExtensionID extID, const char* name, 
+                                        void* icon, void (*callback)(void*, void*), void* userData);
+}
 
 using namespace StoryXT;
 
@@ -25,8 +38,14 @@ static StoryPalette* g_palette = nullptr;
 /**
  * Menu item callback - triggered when user selects our menu item.
  * Creates and shows the story palette on first invocation.
+ * 
+ * @param menuItem The menu item reference (unused)
+ * @param userData User data passed during registration (unused)
  */
-static void menuCallback(XTMenuItemRef menuItem, void* userData) {
+static void STDCALL menuCallback(void* menuItem, void* userData) {
+    (void)menuItem;  // Suppress unused parameter warning
+    (void)userData;  // Suppress unused parameter warning
+    
     if (!g_palette) {
         // Obtain Quark's main window handle
         // Note: In production, use XTGetMainWindow() from SDK
@@ -63,7 +82,7 @@ extern "C" __declspec(dllexport) XTError STDCALL XTInit(XTExtensionID extID) {
     Logger::info("========================================");
 
     // Register our menu item with Quark
-    XTErr err = XTRegisterMenuItem(
+    XTError err = XTRegisterMenuItem(
         extID, 
         "Story Explorer",      // Menu item text
         nullptr,                // Icon (optional)
@@ -107,8 +126,15 @@ extern "C" __declspec(dllexport) void STDCALL XTDeInit(XTExtensionID extID) {
 /**
  * DLL entry point - handles DLL load/unload events.
  * Used for any additional initialization/cleanup needed at DLL level.
+ * 
+ * @param hModule Module handle
+ * @param ul_reason_for_call Reason for the call
+ * @param lpReserved Reserved parameter
+ * @return TRUE on success
  */
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
+    (void)lpReserved;  // Suppress unused parameter warning
+    
     switch (ul_reason_for_call) {
         case DLL_PROCESS_ATTACH:
             // DLL is being loaded into a process's address space
@@ -128,6 +154,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
                 g_palette = nullptr;
             }
             Logger::close();
+            break;
+        default:
             break;
     }
     return TRUE;

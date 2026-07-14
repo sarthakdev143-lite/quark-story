@@ -3,6 +3,13 @@
 ## Overview
 This project demonstrates a production-grade QuarkXPress XTension (C++) that communicates with a Python Flask backend to fetch and display stories inside a custom palette. The implementation follows enterprise-level best practices suitable for a senior developer with 10+ years of experience.
 
+**Key Features:**
+- ✅ Story listing and detail view
+- ✅ Real-time API integration
+- ✅ Thread-safe UI updates
+- ✅ Comprehensive error handling
+- ✅ **Phase 2 Ready**: Architecture for drag-and-drop, story transfer, and deletion
+
 ## Architecture
 
 ### Backend (Python/Flask)
@@ -301,6 +308,26 @@ Before submission, ensure:
 - [ ] Error handling works (test with backend stopped)
 - [ ] Log files are created and populated
 - [ ] Code follows documented best practices
+- [ ] Phase 2 architecture is in place (interfaces, stubs)
+
+---
+
+## Phase 2: Advanced Features Roadmap
+
+The codebase is architected for easy extension. See `XTension/PHASE2_IMPLEMENTATION_PLAN.md` for details on implementing:
+
+1. **Drag-and-Drop Support** - Drag stories to QuarkXPress layouts or external targets
+2. **Story Transfer** - Export stories to files, clipboard, or external APIs
+3. **Safe Deletion** - Delete stories with undo support and confirmation dialogs
+
+### Phase 2 Architecture Highlights
+
+- ✅ Interface defined: `IStoryOperations` (`XTension/include/IStoryOperations.h`)
+- ✅ Stub implementation: `StoryOperationsImpl.cpp` (ready for full implementation)
+- ✅ CMake integration: `StoryOperations` static library linked to main extension
+- ✅ Extension points documented with implementation steps
+- ✅ Testing strategy outlined
+- ✅ Security and performance targets defined
 
 ---
   

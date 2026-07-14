@@ -36,6 +36,16 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     $<$<PLATFORM_ID:Windows>:ws2_32>
 )
 
+# Advanced operations module (Phase 2 stub)
+add_library(StoryOperations STATIC
+    src/StoryOperationsImpl.cpp
+)
+target_include_directories(StoryOperations PUBLIC include)
+target_link_libraries(StoryOperations PRIVATE nlohmann_json::nlohmann_json)
+
+# Link all libraries to main extension
+target_link_libraries(${PROJECT_NAME} PRIVATE StoryOperations)
+
 # Set output name (Quark expects .xnt extension on Windows)
 set_target_properties(${PROJECT_NAME} PROPERTIES
     PREFIX ""
