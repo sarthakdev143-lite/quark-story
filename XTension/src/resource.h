@@ -1,0 +1,3 @@
+#define IDD_STORY_PALETTE  101
+#define IDC_LIST_STORIES   1001
+#define IDC_BTN_REFRESH    1002

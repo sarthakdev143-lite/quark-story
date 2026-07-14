@@ -1,0 +1,44 @@
+{
+  "stories": [
+    {
+      "id": 1,
+      "title": "The Quantum Garden",
+      "author": "Elena Rodriguez",
+      "genre": "Science Fiction",
+      "summary": "A botanist discovers plants communicating through quantum entanglement.",
+      "content": "Dr. Sarah Chen had always known plants were more complex than they appeared. But when her experimental quantum sensors picked up structured data patterns from the garden's rose bushes, she realized she had stumbled upon something extraordinary. The plants weren't just alive—they were communicating...",
+      "publish_date": "2024-01-15",
+      "read_time": "5 min read"
+    },
+    {
+      "id": 2,
+      "title": "Echoes of Old Mumbai",
+      "author": "Arjun Patel",
+      "genre": "Historical Fiction",
+      "summary": "A young archivist discovers letters from 1947 that reveal a forbidden love story.",
+      "content": "The dusty basement of the Mumbai Archives held secrets waiting seventy years to be discovered. When Priya found the bundle of yellowed letters tied with a faded silk ribbon, she unraveled a love story that transcended borders...",
+      "publish_date": "2024-02-20",
+      "read_time": "8 min read"
+    },
+    {
+      "id": 3,
+      "title": "The Last Lighthouse Keeper",
+      "author": "Margaret O'Sullivan",
+      "genre": "Mystery",
+      "summary": "On a remote Irish island, the last lighthouse keeper must solve a century-old mystery.",
+      "content": "The light had been burning for 147 years, and Thomas O'Brien was determined it wouldn't go out on his watch. But when strange symbols began appearing on the lighthouse walls during stormy nights, he realized there was more to this ancient tower...",
+      "publish_date": "2024-03-10",
+      "read_time": "6 min read"
+    },
+    {
+      "id": 4,
+      "title": "Digital Dystopia",
+      "author": "Kenji Tanaka",
+      "genre": "Cyberpunk",
+      "summary": "In a world where memories are currency, a memory dealer discovers her past is fabricated.",
+      "content": "Memory was the ultimate commodity in Neo-Tokyo of 2089. Yuki had made a fortune trading in other people's experiences, but when she stumbled upon a corrupted memory file with her own signature pattern, her entire reality began to unravel...",
+      "publish_date": "2024-04-05",
+      "read_time": "7 min read"
+    }
+  ]
+}
