@@ -303,7 +303,6 @@ Before submission, ensure:
 - [ ] Code follows documented best practices
 
 ---
-
-**Author**: Senior Development Team  
+  
 **Version**: 1.0.0  
 **License**: Proprietary - For Evaluation Purposes Only
