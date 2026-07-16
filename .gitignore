@@ -1,25 +1,6 @@
-```
-# Compressed archives
-*.tar.gz
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.bz2
-*.tar.xz
-*.tar.zst
-```
+# Documentation and reports
+*.md
+*.txt
+backend_validation_report.txt
+BACKEND_VALIDATION_REPORT.md
+SUBMISSION_README.md
