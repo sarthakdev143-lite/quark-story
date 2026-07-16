@@ -1,14 +1,33 @@
 # Quark Story Explorer – Production POC
 
-## Overview
-This project demonstrates a production-grade QuarkXPress XTension (C++) that communicates with a Python Flask backend to fetch and display stories inside a custom palette. The implementation follows enterprise-level best practices suitable for a senior developer with 10+ years of experience.
+[![Backend Status](https://img.shields.io/badge/backend-validated-green)]()
+[![XTension Source](https://img.shields.io/badge/xtension-source--ready-blue)]()
+[![C++17](https://img.shields.io/badge/C%2B%2B-17-orange)]()
+[![Python](https://img.shields.io/badge/Python-3.9+-blue)]()
+[![QuarkXPress](https://img.shields.io/badge/QuarkXPress-2024+-purple)]()
+
+## Executive Summary
+
+This project demonstrates a **production-grade QuarkXPress XTension** (C++) that communicates with a **Python Flask backend** to fetch and display stories inside a custom palette. The implementation follows enterprise-level best practices suitable for a senior developer with 10+ years of experience.
+
+### Validation Status ✅
+
+| Component | Status | Details |
+|-----------|--------|---------|
+| Backend Service | ✅ **VALIDATED** | All API endpoints tested and functional |
+| XTension Source | ✅ **READY** | Complete C++17 implementation |
+| Documentation | ✅ **COMPLETE** | Comprehensive build & deployment guide |
+| Build Script | ✅ **AVAILABLE** | `validate_build.sh` for automated testing |
+
+> **Note:** The compiled `.xnt` file requires Windows + Visual Studio + Quark XDK. See [Build Instructions](#build-instructions-windows-only) below.
 
 **Key Features:**
 - ✅ Story listing and detail view
-- ✅ Real-time API integration
-- ✅ Thread-safe UI updates
-- ✅ Comprehensive error handling
-- ✅ Graceful API failure handling
+- ✅ Real-time API integration with libcurl
+- ✅ Thread-safe UI updates via Windows message passing
+- ✅ Comprehensive error handling with graceful degradation
+- ✅ Background threading prevents UI freezing
+- ✅ UTF-8/UTF-16 internationalization support
 - ✅ **Phase 2 Ready**: Architecture for drag-and-drop, story transfer, and deletion
 
 ## Architecture
@@ -81,44 +100,76 @@ docker run -p 5000:5000 story-api
 - `GET /api/v1/stories/<id>` - Get story details
 - `GET /api/v1/stories/count` - Get total story count
 
-### 2. Build the XTension
+### 2. Build the XTension (Windows Only)
 
-```bash
-cd XTension
+> ⚠️ **Important:** The XTension must be built on **Windows** with Visual Studio and the Quark XDK.
 
-# Create build directory
+#### Prerequisites
+
+| Component | Version | Download |
+|-----------|---------|----------|
+| Windows | 10/11 (64-bit) | - |
+| Visual Studio | 2022 | [Visual Studio](https://visualstudio.microsoft.com/) |
+| Workload | Desktop development with C++ | Install via VS Installer |
+| Quark XDK | 2024+ | [Quark Developer Portal](https://www.quark.com/) |
+| CMake | 3.20+ | [CMake](https://cmake.org/download/) |
+| vcpkg | Latest | [vcpkg](https://github.com/microsoft/vcpkg) |
+
+#### Step-by-Step Build Process
+
+```powershell
+# 1. Install vcpkg and dependencies
+git clone https://github.com/Microsoft/vcpkg.git C:\vcpkg
+cd C:\vcpkg
+.\bootstrap-vcpkg.bat
+.\vcpkg install curl:x64-windows
+
+# 2. Navigate to XTension directory
+cd C:\path\to\workspace\XTension
+
+# 3. Create build directory
 mkdir build && cd build
 
-# Configure with CMake (adjust vcpkg toolchain path)
-cmake .. \
-    -DCMAKE_TOOLCHAIN_FILE=<vcpkg_root>/scripts/buildsystems/vcpkg.cmake \
+# 4. Configure CMake (update paths to match your installation)
+cmake .. ^
+    -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake ^
+    -DQUARK_SDK_INC="C:/Quark/XTensionsSDK/include" ^
+    -DQUARK_SDK_LIB="C:/Quark/XTensionsSDK/lib" ^
     -DCMAKE_BUILD_TYPE=Release
 
-# Build
+# 5. Build the XTension
 cmake --build . --config Release
 
-# Output: QuarkStoryXT.xnt (Windows DLL)
-# Location: build/QuarkStoryXT.xnt
+# 6. Verify output
+dir QuarkStoryXT.xnt
 ```
 
-**Build Output Verification:**
+#### Build Output Verification
+
 After successful build, verify the following files exist:
-- `build/QuarkStoryXT.xnt` - The compiled XTension (Windows DLL with .xnt extension)
-- `build/StoryOperations.lib` - Static library for Phase 2 features
 
-**Note:** Update the Quark SDK paths in `CMakeLists.txt` to match your installation:
-```cmake
-set(QUARK_SDK_INC "C:/Quark/XTensionsSDK/include")
-set(QUARK_SDK_LIB "C:/Quark/XTensionsSDK/lib")
-```
+| File | Description |
+|------|-------------|
+| `build/QuarkStoryXT.xnt` | The compiled XTension (Windows DLL with .xnt extension) |
+| `build/StoryOperations.lib` | Static library for Phase 2 features |
 
-**Build Configuration Options:**
+#### Troubleshooting Build Errors
+
+| Error | Solution |
+|-------|----------|
+| `fatal error LNK1181: cannot open input file 'XTInterface.lib'` | Update `QUARK_SDK_LIB` path in CMakeLists.txt |
+| `Could NOT find CURL` | Run `vcpkg install curl:x64-windows` |
+| `XTExtensions.h not found` | Update `QUARK_SDK_INC` path in CMakeLists.txt |
+| `MSB8036: Windows SDK version not found` | Install Windows 10/11 SDK via Visual Studio Installer |
+
+#### Build Configuration Options
+
 | Option | Description | Default |
 |--------|-------------|---------|
-| CMAKE_BUILD_TYPE | Build configuration (Debug/Release) | Release |
-| CMAKE_TOOLCHAIN_FILE | vcpkg toolchain path | Required |
-| QUARK_SDK_INC | Quark SDK include directory | Required |
-| QUARK_SDK_LIB | Quark SDK library directory | Required |
+| `CMAKE_BUILD_TYPE` | Build configuration (Debug/Release) | Release |
+| `CMAKE_TOOLCHAIN_FILE` | vcpkg toolchain path | Required |
+| `QUARK_SDK_INC` | Quark SDK include directory | Required |
+| `QUARK_SDK_LIB` | Quark SDK library directory | Required |
 
 ### 3. Install the XTension
 
@@ -200,6 +251,24 @@ The XTension automatically loads when QuarkXPress starts. To verify:
 - [ ] Refresh button reloads stories
 - [ ] Backend connection error shows friendly message
 - [ ] No crashes on API failures
+
+## Automated Validation
+
+Run the validation script to verify all components:
+
+```bash
+# Linux/macOS
+./validate_build.sh
+
+# Windows (PowerShell)
+.\validate_build.ps1
+```
+
+The script will:
+1. ✅ Validate Python backend and all API endpoints
+2. ✅ Verify XTension source code completeness
+3. ✅ Display build instructions for your platform
+4. ✅ Provide deployment checklist
 
 ## Project Structure
 
