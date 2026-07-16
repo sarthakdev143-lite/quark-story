@@ -1,4 +1,4 @@
 ```
-# Build artifacts
-BUILD_OUTPUT.md
+__pycache__/
+*.pyc
 ```
