@@ -37,7 +37,7 @@ const CONFIG = {
         'vendor', 'bower_components', 'jspm_packages',
         '.idea', '.vscode', '.vs', '__pycache__',
         'target', 'out', 'bin', 'obj', 'lib',
-        'logs', 'uploads', 'downloads'
+        'logs', 'uploads', 'downloads', 'C:vcpkg'
     ],
     
     // Files to exclude (by name)
