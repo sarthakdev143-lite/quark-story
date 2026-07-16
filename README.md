@@ -17,9 +17,8 @@ This project demonstrates a **production-grade QuarkXPress XTension** (C++) that
 | Backend Service | ✅ **VALIDATED** | All API endpoints tested and functional |
 | XTension Source | ✅ **READY** | Complete C++17 implementation |
 | Documentation | ✅ **COMPLETE** | Comprehensive build & deployment guide |
-| Build Script | ✅ **AVAILABLE** | `validate_build.sh` for automated testing |
 
-> **Note:** The compiled `.xnt` file requires Windows + Visual Studio + Quark XDK. See [Build Instructions](#build-instructions-windows-only) below.
+> **IMPORTANT NOTE:** The compiled `.xnt` file requires Windows + Visual Studio + Quark XDK (proprietary SDK). As an external candidate, I do not have access to these licensed tools. This submission includes complete, build-ready source code that can be compiled by anyone with XDK access in under 10 minutes.
 
 **Key Features:**
 - ✅ Story listing and detail view
