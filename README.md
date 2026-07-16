@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-This project demonstrates a **production-grade QuarkXPress XTension** (C++) that communicates with a **Python Flask backend** to fetch and display stories inside a custom palette. The implementation follows enterprise-level best practices suitable for a senior developer with 10+ years of experience.
+This project demonstrates a **production-grade QuarkXPress XTension** (C++) that communicates with a **Python Flask backend** to fetch and display stories inside a custom palette. The implementation follows enterprise-level best practices.
 
 ### Validation Status ✅
 
