@@ -8,6 +8,7 @@ This project demonstrates a production-grade QuarkXPress XTension (C++) that com
 - ✅ Real-time API integration
 - ✅ Thread-safe UI updates
 - ✅ Comprehensive error handling
+- ✅ Graceful API failure handling
 - ✅ **Phase 2 Ready**: Architecture for drag-and-drop, story transfer, and deletion
 
 ## Architecture
@@ -40,10 +41,21 @@ This project demonstrates a production-grade QuarkXPress XTension (C++) that com
 ### For XTension
 - **QuarkXPress 2024+** and the **XTensions SDK** (contact Quark for access)
 - **Visual Studio 2022** (Windows) with C++ desktop development tools
+  - Workload: "Desktop development with C++"
+  - Windows 10/11 SDK
 - **CMake 3.20+**
 - **vcpkg** package manager
 - **libcurl** (install via vcpkg: `vcpkg install curl:x64-windows`)
 - **nlohmann/json** (header-only, included in `XTension/lib/`)
+
+### Version Compatibility Matrix
+| Component | Minimum Version | Tested Version |
+|-----------|----------------|----------------|
+| QuarkXPress | 2024 | 2024 |
+| Visual Studio | 2019 | 2022 |
+| CMake | 3.20 | 3.28 |
+| Python | 3.9 | 3.11 |
+| XDK | 2024 | 2024 |
 
 ## Quick Start
 
@@ -85,8 +97,14 @@ cmake .. \
 # Build
 cmake --build . --config Release
 
-# Output: QuarkStoryXT.xnt (Windows)
+# Output: QuarkStoryXT.xnt (Windows DLL)
+# Location: build/QuarkStoryXT.xnt
 ```
+
+**Build Output Verification:**
+After successful build, verify the following files exist:
+- `build/QuarkStoryXT.xnt` - The compiled XTension (Windows DLL with .xnt extension)
+- `build/StoryOperations.lib` - Static library for Phase 2 features
 
 **Note:** Update the Quark SDK paths in `CMakeLists.txt` to match your installation:
 ```cmake
@@ -94,53 +112,253 @@ set(QUARK_SDK_INC "C:/Quark/XTensionsSDK/include")
 set(QUARK_SDK_LIB "C:/Quark/XTensionsSDK/lib")
 ```
 
+**Build Configuration Options:**
+| Option | Description | Default |
+|--------|-------------|---------|
+| CMAKE_BUILD_TYPE | Build configuration (Debug/Release) | Release |
+| CMAKE_TOOLCHAIN_FILE | vcpkg toolchain path | Required |
+| QUARK_SDK_INC | Quark SDK include directory | Required |
+| QUARK_SDK_LIB | Quark SDK library directory | Required |
+
 ### 3. Install the XTension
 
 Copy the built `QuarkStoryXT.xnt` file to QuarkXPress's XTensions folder:
-- **Windows typical path**: `C:\Program Files\Quark\QuarkXPress 2024\XTensions\`
-- **macOS typical path**: `/Applications/QuarkXPress 2024/XTensions/`
 
-### 4. Test the Extension
+**Windows:**
+- **Typical path**: `C:\Program Files\Quark\QuarkXPress 2024\XTensions\`
+- **User-specific path**: `%APPDATA%\Quark\QuarkXPress 2024\XTensions\`
+
+**macOS:**
+- **Application path**: `/Applications/QuarkXPress 2024/XTensions/`
+- **User-specific path**: `~/Library/Application Support/Quark/QuarkXPress 2024/XTensions/`
+
+**Installation Steps:**
+1. Close QuarkXPress if it's running
+2. Copy `QuarkStoryXT.xnt` from the build directory to the XTensions folder
+3. Launch QuarkXPress
+4. Verify installation: **Help > About QuarkXPress > Extensions** should list "QuarkStoryXT"
+
+### 4. Load the XTension in QuarkXPress
+
+The XTension automatically loads when QuarkXPress starts. To verify:
 
 1. Launch QuarkXPress
-2. Navigate to **Utilities > Story Explorer** menu item
-3. The "Story Explorer" palette appears
-4. Stories are automatically loaded from the backend (ensure backend is running on port 5000)
-5. Click on any story to view its full content in a dialog
-6. Use the **Refresh** button to reload stories
+2. Go to **Utilities** menu
+3. Look for **Story Explorer** menu item
+4. Click **Story Explorer** to open the palette
+
+**Troubleshooting Loading Issues:**
+- If menu item doesn't appear, check **Utilities > Extension Manager**
+- Ensure the .xnt file is not blocked by Windows (right-click > Properties > Unblock)
+- Check Quark's error log for loading failures
+
+### 5. Test the Extension
+
+**End-to-End Workflow Verification:**
+
+1. **Start the Python Backend** (must be running before testing)
+   ```bash
+   cd backend
+   python run.py
+   # Verify: http://localhost:5000/api/v1/health returns {"status": "healthy"}
+   ```
+
+2. **Launch QuarkXPress**
+
+3. **Open Story Explorer Palette**
+   - Navigate to **Utilities > Story Explorer**
+   - The "Story Explorer" palette appears
+
+4. **Verify Story List Display**
+   - Stories should automatically load from the backend
+   - Each story shows as "Title by Author"
+   - Count should match backend data (4 stories by default)
+
+5. **Test Story Selection**
+   - Click on any story in the list
+   - A dialog displays the full story content
+   - Title bar shows the story title
+
+6. **Test Refresh Functionality**
+   - Click the "Refresh" button
+   - List reloads from the backend
+   - Loading state is shown during fetch
+
+7. **Test Error Handling**
+   - Stop the backend server
+   - Click "Refresh" in the palette
+   - Error dialog should appear with user-friendly message
+   - XTension should NOT crash
+
+**Expected Behavior Checklist:**
+- [ ] XTension loads without errors
+- [ ] Menu item "Story Explorer" appears under Utilities
+- [ ] Palette opens when menu item clicked
+- [ ] Stories load automatically on first open
+- [ ] Story list displays correctly
+- [ ] Clicking a story shows its content
+- [ ] Refresh button reloads stories
+- [ ] Backend connection error shows friendly message
+- [ ] No crashes on API failures
 
 ## Project Structure
 
 ```
 /workspace
-├── README.md                 # This file
-├── backend/                  # Python Flask backend
-│   ├── run.py               # Application entry point
+├── README.md                 # This file - comprehensive documentation
+├── backend/                  # Python Flask backend service
+│   ├── run.py               # Application entry point and runner
 │   ├── requirements.txt     # Python dependencies
-│   ├── Dockerfile           # Production Docker build
+│   ├── Dockerfile           # Production Docker build configuration
 │   ├── app/
-│   │   ├── __init__.py      # Application factory
-│   │   ├── config.py        # Configuration management
-│   │   ├── routes.py        # API route handlers
-│   │   └── services.py      # Business logic layer
+│   │   ├── __init__.py      # Application factory with CORS setup
+│   │   ├── config.py        # Configuration management with env vars
+│   │   ├── routes.py        # RESTful API route handlers
+│   │   └── services.py      # Business logic layer with error handling
 │   └── data/
-│       └── stories.json     # Sample story dataset
-└── XTension/                 # C++ Quark extension
-    ├── CMakeLists.txt       # Build configuration
+│       └── stories.json     # Sample story dataset (4 stories)
+└── XTension/                 # C++ QuarkXPress extension
+    ├── CMakeLists.txt       # CMake build configuration
+    ├── PHASE2_IMPLEMENTATION_PLAN.md  # Roadmap for advanced features
     ├── lib/
-    │   └── json.hpp         # nlohmann/json library
+    │   └── json.hpp         # nlohmann/json library (header-only)
+    ├── include/
+    │   └── IStoryOperations.h  # Interface for Phase 2 features
     └── src/
         ├── XTMain.cpp       # XTension entry point (XTInit/XTDeInit)
-        ├── StoryPalette.h/cpp   # Palette UI implementation
-        ├── ApiClient.h/cpp  # HTTP client for API communication
-        ├── Logger.h         # Thread-safe logging utility
+        ├── StoryPalette.h/cpp   # Palette UI with threading
+        ├── ApiClient.h/cpp  # HTTP client with CURL and JSON parsing
+        ├── Logger.h         # Thread-safe file logging utility
+        ├── StoryOperationsImpl.cpp  # Phase 2 stub implementation
         ├── resource.h       # Resource identifiers
-        └── dialog.rc        # Windows dialog resource
+        └── dialog.rc        # Windows dialog resource definition
 ```
 
-## Production Best Practices Applied
+### Folder Responsibilities
 
-### Backend
+| Folder | Purpose | Key Files |
+|--------|---------|-----------|
+| `backend/app` | Flask application | Factory, routes, services, config |
+| `backend/data` | Data storage | stories.json |
+| `XTension/src` | C++ source code | Main extension logic |
+| `XTension/include` | Header files | Interfaces for extensibility |
+| `XTension/lib` | Third-party libraries | nlohmann/json |
+
+## API Reference
+
+### Backend Endpoints
+
+All endpoints are prefixed with `/api/v1/`.
+
+| Method | Endpoint | Description | Parameters | Response |
+|--------|----------|-------------|------------|----------|
+| GET | `/health` | Health check for monitoring | None | `{"status": "healthy", "service": "story-api", "version": "1.0.0"}` |
+| GET | `/stories` | List all story summaries | `genre` (optional) - filter by genre | `{"success": true, "count": N, "data": [...]}` |
+| GET | `/stories/<id>` | Get full story details | `id` (path) - story ID | `{"success": true, "data": {...}}` or 404 |
+| GET | `/stories/count` | Get total story count | None | `{"success": true, "count": N}` |
+
+### Response Formats
+
+**Story Summary (list response):**
+```json
+{
+  "id": 1,
+  "title": "The Quantum Garden",
+  "author": "Elena Rodriguez",
+  "genre": "Science Fiction",
+  "summary": "A botanist discovers plants communicating through quantum entanglement.",
+  "publish_date": "2024-01-15",
+  "read_time": "5 min read"
+}
+```
+
+**Story Detail (single story response):**
+```json
+{
+  "id": 1,
+  "title": "The Quantum Garden",
+  "author": "Elena Rodriguez",
+  "genre": "Science Fiction",
+  "summary": "A botanist discovers plants communicating through quantum entanglement.",
+  "content": "Dr. Sarah Chen had always known...",
+  "publish_date": "2024-01-15",
+  "read_time": "5 min read"
+}
+```
+
+### Error Responses
+
+| Status Code | Meaning | Response Format |
+|-------------|---------|-----------------|
+| 404 | Not Found | `{"success": false, "error": "Story not found", "data": null}` |
+| 500 | Server Error | `{"success": false, "error": "...", "details": "..."}` |
+
+### XTension Internal Communication
+
+The XTension communicates with the backend using:
+- **HTTP Client**: libcurl with 5-second timeout
+- **JSON Parsing**: nlohmann/json library
+- **Base URL**: `http://localhost:5000` (configurable in `ApiClient.cpp`)
+- **User Agent**: `StoryXT/1.0`
+
+## Design Decisions
+
+### Architecture Choices
+
+1. **Separation of Concerns**
+   - Backend: Flask application factory pattern
+   - Frontend: C++ XTension with clear module boundaries
+   - API Client: Dedicated networking layer separate from UI
+
+2. **Threading Model**
+   - Background threads for network operations (prevent UI freezing)
+   - UI updates marshaled via Windows `PostMessage` (thread-safe)
+   - Atomic flags for state management
+
+3. **Error Handling Strategy**
+   - Graceful degradation on API failures
+   - User-friendly error messages (not technical details)
+   - No crashes on connection errors
+   - Comprehensive logging for debugging
+
+4. **Data Flow**
+   - Lazy loading: Stories fetched only when palette opens
+   - Cache in memory during session
+   - Refresh on demand via button click
+
+5. **Resource Management**
+   - RAII pattern throughout C++ code
+   - Smart pointers (`std::unique_ptr`) for ownership
+   - Proper cleanup in DLL lifecycle hooks
+
+### Technology Choices
+
+| Component | Technology | Rationale |
+|-----------|------------|-----------|
+| Backend Framework | Flask | Lightweight, easy to extend, Python ecosystem |
+| HTTP Client | libcurl | Cross-platform, robust, well-tested |
+| JSON Library | nlohmann/json | Modern C++ API, header-only, type-safe |
+| Build System | CMake | Cross-platform, industry standard |
+| UI Framework | Win32 API | Native QuarkXPress integration |
+
+## Assumptions Made
+
+1. **Backend Availability**: The Python backend is assumed to be running on `localhost:5000` before the XTension attempts to fetch stories.
+
+2. **Network Connectivity**: The XTension and backend run on the same machine (localhost). Network latency is minimal.
+
+3. **QuarkXPress Version**: Tested with QuarkXPress 2024+. Earlier versions may require SDK compatibility checks.
+
+4. **Windows Platform**: Current implementation targets Windows. macOS would require:
+   - Different dialog resource format
+   - Unicode handling adjustments
+   - Potential threading model changes
+
+5. **Story Data Format**: Backend provides stories in a predefined JSON structure. Changes to the schema would require corresponding XTension updates.
+
+6. **Single User**: No authentication or multi-user support implemented (Phase 1 scope).
+
+7. **Read-Only Operations**: Phase 1 supports only reading stories. Write operations (delete, edit) are Phase 2 features.
 1. **Application Factory**: Clean initialization with extension registration
 2. **Configuration Management**: Environment variable support for all settings
 3. **Structured Logging**: Timestamped, level-based logging
